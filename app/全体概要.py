@@ -34,13 +34,25 @@ df, details_df = load_all_data()
 # --------------------------------------------------------------------------
 # サイドバー (フィルター)
 # --------------------------------------------------------------------------
-st.sidebar.header('期間の選択')
+st.sidebar.markdown("""
+    <style>
+        [data-testid="stSidebarNav"]::before {
+            content: "e-Stat 分析ダッシュボード";
+            margin-left: 10px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            display: block;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 min_date = df['date'].min().date()
 max_date = df['date'].max().date()
 
 date_range_option = st.sidebar.radio(
-    "期間の選択方法:",
+    "期間の選択:",
     ('過去1週間', '過去1ヶ月', '過去1年', '過去2年', '過去3年', '過去5年', '全期間', '期間を直接指定'),
     index=6,
 )
@@ -85,6 +97,25 @@ filtered_df = df[
     (df['date'].dt.date <= end_date)
 ]
 
+
+st.sidebar.markdown(
+    f"""
+    <style>
+    .sidebar-footer {{
+        font-size: 15px !important;
+        color: #555;
+        font-family: "Source Sans", sans-serif !important;
+        letter-spacing: 0.02em;
+    }}
+    </style>
+
+    <p class="sidebar-footer">
+        集計対象期間: <br> <b>{min_date.strftime('%Y/%m/%d')}</b> ～ <b>{max_date.strftime('%Y/%m/%d')}</b>
+    </p>
+    """,
+    unsafe_allow_html=True
+)
+
 # --------------------------------------------------------------------------
 # メインコンテンツ
 # --------------------------------------------------------------------------
@@ -97,13 +128,17 @@ total_series_count = details_df['series_name'].nunique()
 ranked_series_count = filtered_df['series_name'].nunique()
 unranked_series_count = total_series_count - ranked_series_count
 
-col1, col2, col3 = st.columns(3)
-col1.metric("期間内総アクセス数", f"{filtered_df['access_count'].sum():,.0f}")
-ranked_series_text = f"{ranked_series_count} ({ranked_series_count / total_series_count:.1%})"
-col2.metric("ランクインシリーズ数", ranked_series_text)
-unranked_series_text = f"{unranked_series_count} ({unranked_series_count / total_series_count:.1%})"
-col3.metric("圏外シリーズ数", unranked_series_text)
+# 期間内の平均日次アクセス数
+days_in_period = (end_date - start_date).days + 1
+avg_daily_access = filtered_df['access_count'].sum() / days_in_period
 
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("期間内総アクセス数", f"{filtered_df['access_count'].sum():,.0f}")
+col2.metric("平均日次アクセス数", f"{avg_daily_access:,.1f}")
+ranked_series_text = f"{ranked_series_count} ({ranked_series_count / total_series_count:.1%})"
+col3.metric("ランクインシリーズ数", ranked_series_text)
+unranked_series_text = f"{unranked_series_count} ({unranked_series_count / total_series_count:.1%})"
+col4.metric("圏外シリーズ数", unranked_series_text)
 st.markdown("---")
 
 # --- 時系列推移 ---
@@ -221,9 +256,7 @@ with col_file_bar:
         category_orders={'field_major': major_order} # ソート順を適用
     )
     st.plotly_chart(fig_bar_type, use_container_width=True)
-
-st.markdown("---")
-
+    
 # --- ランキング圏外の統計一覧 ---
 st.subheader("ランキング圏外の統計分析")
 ranked_series_set = set(df['series_name'].unique())

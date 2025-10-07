@@ -30,12 +30,25 @@ df, details_df = load_data()
 # --------------------------------------------------------------------------
 # サイドバー (フィルター)
 # --------------------------------------------------------------------------
-st.sidebar.header('期間の選択')
+st.sidebar.markdown("""
+    <style>
+        [data-testid="stSidebarNav"]::before {
+            content: "e-Stat 分析ダッシュボード";
+            margin-left: 10px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            display: block;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 min_date = df['date'].min().date()
 max_date = df['date'].max().date()
 
 date_range_option = st.sidebar.radio(
-    "期間の選択方法:",
+    "期間の選択:",
     ('過去1週間', '過去1ヶ月', '過去1年', '過去2年', '過去3年', '過去5年', '全期間', '期間を直接指定'),
     index=6,
 )
@@ -79,6 +92,24 @@ filtered_df = df[
     (df['date'].dt.date >= start_date) &
     (df['date'].dt.date <= end_date)
 ]
+
+st.sidebar.markdown(
+    f"""
+    <style>
+    .sidebar-footer {{
+        font-size: 15px !important;
+        color: #555;
+        font-family: "Source Sans", sans-serif !important;
+        letter-spacing: 0.02em;
+    }}
+    </style>
+
+    <p class="sidebar-footer">
+        集計対象期間: <br> <b>{min_date.strftime('%Y/%m/%d')}</b> ～ <b>{max_date.strftime('%Y/%m/%d')}</b>
+    </p>
+    """,
+    unsafe_allow_html=True
+)
 
 # --------------------------------------------------------------------------
 # メインコンテンツ
