@@ -116,7 +116,13 @@ st.sidebar.markdown(
 # --------------------------------------------------------------------------
 st.title("分野別 詳細分析")
 st.markdown("特定の分野に焦点を当て、その中でのシリーズ間の比較や詳細な動向を多角的に分析します。")
-
+with st.expander("グラフの使い方（クリックして表示）"):
+    st.markdown("""
+    - グラフ上でカーソルを動かすと数値を確認できます  
+    - 範囲をドラッグすると拡大できます（ダブルクリックでリセット）  
+    - 凡例をクリックして項目の表示／非表示を切り替え  
+    - グラフ右上のツールバーから画像として保存可能  
+    """)
 # --- 分野の選択 ---
 custom_order = [
     "国土・気象", "人口・世帯", "労働・賃金", "農林水産業", "鉱工業",
@@ -149,7 +155,7 @@ else:
         df_major_filtered = filtered_df[filtered_df['field_major'] == selected_major]
         
         # --- 1. 分野サマリー ---
-        st.header(f"「{selected_major}」分野 サマリー")
+        st.header(f"{selected_major}分野概要")
         
         # 変更点 1: サマリーセクションの指標を再構成
         total_access = df_major_filtered['access_count'].sum()
@@ -187,7 +193,7 @@ else:
         st.markdown("---")
 
         # --- 2. シリーズ時系列比較 ---
-        st.header(f"「{selected_major}」分野 シリーズ時系列比較")
+        st.header(f"{selected_major}分野時系列比較")
         st.markdown("選択した分野に含まれる各シリーズの月間アクセス数の推移を比較できます。凡例をダブルクリックすると特定のシリーズをハイライトできます。")
         
         series_monthly_comparison = df_major_filtered.groupby(['series_name', 'year_month'])['access_count'].sum().reset_index()
@@ -206,7 +212,7 @@ else:
         st.markdown("---")
         
         # --- 3. 分野内シリーズ一覧 ---
-        st.header(f"「{selected_major}」分野 シリーズ一覧")
+        st.header(f"{selected_major}分野シリーズランクイン状況")
         
         # 変更点 2: シリーズ一覧のサマリーに表示するテキストをここで定義
         all_series_in_major = details_df[details_df['field_major'] == selected_major]
@@ -223,13 +229,11 @@ else:
             unranked_text = f"{unranked_series_in_major_count} シリーズ"
 
         # 3-1. サマリー(KPI)
-        st.markdown("##### ランクイン状況 サマリー")
         kpi_r, kpi_u = st.columns(2)
         kpi_r.metric("分野内のランクインシリーズ数", ranked_text) # 変更点 2
         kpi_u.metric("分野内の圏外シリーズ数", unranked_text) # 変更点 2
 
         # 3-2. 組織別内訳
-        st.markdown("##### ランクイン／圏外シリーズの組織別内訳")
         col_ranked_pie, col_unranked_pie = st.columns(2)
         
         ranked_series_in_period = set(df_major_filtered['series_name'].unique())
@@ -267,7 +271,7 @@ else:
         st.markdown("---")
         
         # --- 4. ファイル種別分析 ---
-        st.header(f"「{selected_major}」分野 ファイル種別分析")
+        st.header(f"{selected_major}分野ファイル種別分析")
         st.markdown("選択した分野で、どのファイル形式（PDF, Excel, CSVなど）が多く利用されているかを確認できます。")
         
         col_pie, col_bar = st.columns(2)
@@ -292,7 +296,7 @@ else:
         st.markdown("---")
         
         # --- 5. シリーズ詳細ドリルダウン ---
-        st.header(f"「{selected_major}」分野 シリーズ詳細ドリルダウン")
+        st.header(f"{selected_major}分野詳細ドリルダウン")
         series_in_major_ranked = sorted(df_major_filtered['series_name'].dropna().unique())
 
         if not series_in_major_ranked:
@@ -314,7 +318,7 @@ else:
                 skpi2.metric("期間内平均順位", f"{series_avg_rank:.1f} 位")
                 skpi3.metric("ランキング登場日数", f"{series_days_in_ranking} 日 / 全 {total_days_in_period} 日")
 
-                st.markdown(f"##### 「{selected_series}」内のファイル別アクセス数ランキング")
+                st.markdown(f"##### {selected_series}内のファイル別アクセス数ランキング")
                 st.info("""
                 **注:** e-Statのデータ特性上、公開年などが異なるが同じ名称のファイルが複数存在する場合があります。
                 この表は個別のファイル（URL）ごとにアクセス数を集計しているため、同じファイル名が複数行表示されることがあります。

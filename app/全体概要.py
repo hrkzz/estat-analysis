@@ -122,6 +122,14 @@ st.sidebar.markdown(
 st.title('e-Stat ランキング分析')
 st.markdown("e-Statの日次ランキングデータに基づき、統計全体の人気動向を可視化します。このダッシュボードはランキング上位の統計のみを集計したものであり、e-Stat全体のアクセス数の推移を示すものではありません。")
 
+with st.expander("グラフの使い方（クリックして表示）"):
+    st.markdown("""
+    - グラフ上でカーソルを動かすと数値を確認できます  
+    - 範囲をドラッグすると拡大できます（ダブルクリックでリセット）  
+    - 凡例をクリックして項目の表示／非表示を切り替え  
+    - グラフ右上のツールバーから画像として保存可能  
+    """)
+    
 # --- KPI ---
 st.subheader("主要指標（KPI）")
 total_series_count = details_df['series_name'].nunique()
