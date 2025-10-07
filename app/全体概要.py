@@ -188,6 +188,42 @@ st.plotly_chart(fig_org_stack, use_container_width=True)
 
 st.markdown("---")
 
+# --- ファイル形式の分析 ---
+st.subheader("ファイル形式の分析")
+col_file_pie, col_file_bar = st.columns(2)
+
+with col_file_pie:
+    st.markdown("##### 全体の割合")
+    file_type_total = filtered_df.groupby('file_type')['access_count'].sum()
+    fig_pie_type = px.pie(
+        file_type_total, 
+        names=file_type_total.index, 
+        values=file_type_total.values, 
+        title='ファイル形式別の総アクセス数割合',
+        hole=0.4
+    )
+    st.plotly_chart(fig_pie_type, use_container_width=True)
+
+with col_file_bar:
+    st.markdown("##### 分野ごとの内訳")
+    file_type_by_major = filtered_df.groupby(['field_major', 'file_type'])['access_count'].sum().reset_index()
+    
+    # 見やすくするため分野を総アクセス数でソート
+    major_order = filtered_df.groupby('field_major')['access_count'].sum().sort_values(ascending=False).index
+    
+    fig_bar_type = px.bar(
+        file_type_by_major,
+        x='field_major',
+        y='access_count',
+        color='file_type',
+        labels={'field_major': '分野', 'access_count': '総アクセス数', 'file_type': 'ファイル形式'},
+        title='分野ごとのファイル形式アクセス数',
+        category_orders={'field_major': major_order} # ソート順を適用
+    )
+    st.plotly_chart(fig_bar_type, use_container_width=True)
+
+st.markdown("---")
+
 # --- ランキング圏外の統計一覧 ---
 st.subheader("ランキング圏外の統計分析")
 ranked_series_set = set(df['series_name'].unique())
